@@ -3,6 +3,14 @@ const router = express.Router();
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
+const redirectLogin = (req, res, next) => {
+  if (!req.session.userId) {
+    res.redirect("./login"); // redirect to the login page
+  } else {
+    next(); // move to the next middleware function
+  }
+};
+
 // GET route for rendering the registration form
 router.get("/register", function (req, res, next) {
   res.render("register.ejs"); // Assuming you're using EJS templates
@@ -37,7 +45,7 @@ router.post("/registered", function (req, res, next) {
     });
   });
 });
-router.get("/list", function (req, res, next) {
+router.get("/list", redirectLogin, function (req, res, next) {
   // SQL query to select all users without their passwords
   let sqlquery = `SELECT username, first_name, last_name, email FROM users`;
 
@@ -58,6 +66,7 @@ router.get("/login", function (req, res, next) {
 });
 // POST route for handling login
 router.post("/loggedin", function (req, res, next) {
+  req.session.userId = req.body.username;
   // Extract form data
   const { username, password } = req.body;
 
